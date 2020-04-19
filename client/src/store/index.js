@@ -24,7 +24,11 @@ export default new Vuex.Store({
             return axios
                     .post('http://127.0.0.1:5000/api/users/register', credentials)
                     .then((response) => {
-                        commit('SET_USER_DATA', response.data)
+                        if (response.data.error) {
+                            return response.data.error
+                        } else {
+                            commit('SET_USER_DATA', response.data)
+                        }
                     })
         },
         login({ commit }, credentials) {

@@ -19,6 +19,7 @@
         <button type="submit" name="button">
         Register
         </button>
+        <p>{{ error }}</p>
     </form>
     </div>
 </template>
@@ -30,7 +31,8 @@ export default {
         return {
             name: '',
             email: '',
-            password: ''
+            password: '',
+            error: null
         }
     },
     methods: {
@@ -41,6 +43,8 @@ export default {
                 password: this.password
             }).then(() => {
                 this.$router.push({ name: 'dashboard' })
+            }).catch(err => {
+                this.error = err
             })
         }
     }

@@ -13,23 +13,29 @@ module.exports = {
         expirationDate.setDate(today.getDate() + 60)
 
         await User.findOne({ email, password })
-                .then(() => {
-                    const payload = {
-                        email, password
-                    }
-    
-                    let data = jwt.sign(payload, keys, {
-                        expiresIn: parseInt(expirationDate.getTime() / 1000, 10)
-                    })
+                .then(user => {
 
-                    return res.json({
-                        email: email,
-                        token: `${data}`
-                    })
+                    if (user.email === email && user.password === password) {
+                        
+                        const payload = {
+                            email, password
+                        }
+        
+                        let token = jwt.sign(payload, keys, {
+                            expiresIn: parseInt(expirationDate.getTime() / 1000, 10)
+                        })
     
+                        return res.json({
+                            email: user.email,
+                            name: user.name,
+                            token: `${token}`
+                        })
+                        
+                    } 
+
                 })
                 .catch(error => res.json({
-                    error
+                    error: "Invalid credentials" 
                 }))
 
     },
@@ -42,22 +48,35 @@ module.exports = {
         const expirationDate = new Date(today);
         expirationDate.setDate(today.getDate() + 60);
 
+    
         await User.insertMany({ name, email, password })
-            .then(() => {
+            .then(user => {
 
-                const payload = {
-                    name, email
+                let errorsToSend = []
+
+                if (user.email === email) {
+                    errorsToSend.push('An account with this email already exists.')
+                } 
+                if (user.password.length < 5) {
+                    errorsToSend.push('Password too short.')
                 }
-
-                let data = jwt.sign(payload, keys, {
-                    expiresIn: parseInt(expirationDate.getTime() / 1000, 10)
-                })
-
-                return res.json({
-                    email: email,
-                    name: name,
-                    token: `${data}`
-                })
+                if (errorsToSend.length > 0) { // check if there are any errors
+                    res.status(400).json({ errors: errorsToSend }) // send errors back with status code
+                } else {
+                    const payload = {
+                        name, email
+                    }
+    
+                    let data = jwt.sign(payload, keys, {
+                        expiresIn: parseInt(expirationDate.getTime() / 1000, 10)
+                    })
+    
+                    return res.json({
+                        email: email,
+                        name: name,
+                        token: `${data}`
+                    })
+                }
 
             })
             .catch(error => res.json({

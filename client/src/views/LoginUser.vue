@@ -14,6 +14,7 @@
         <button type="submit" name="button">
         Login
         </button>
+        <p>{{ errors }}</p>
     </form>
     </div>
 </template>
@@ -26,7 +27,8 @@ export default {
     data () {
         return {
             email: '',
-            password: ''
+            password: '',
+            errors: []
         }
     },
 
@@ -35,10 +37,13 @@ export default {
             this.$store.dispatch('login', {
                 email: this.email,
                 password: this.password
-            })
-            .then( () => {
-                this.$router.push({ name: 'dashboard' })
-            })
+            }).then((data) => {
+                if (data) {
+                    this.errors = data
+                } else {
+                    this.$router.push({ name: 'dashboard' })
+                }
+            }).catch(error => this.errors = error)
         }
     }
 }
